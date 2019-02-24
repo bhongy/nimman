@@ -1,0 +1,18 @@
+{
+  "name": "nimman",
+  "version": "1.0.0",
+  "description": "A(nother prototype) Server-side Render Web Server Framework of mine.",
+  "main": "index.js",
+  "repository": "git@github.com:bhongy/nimman.git",
+  "author": "Thanik Bhongbhibhat <email@thanik.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^24.0.6",
+    "jest": "^24.1.0",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "webpack": "^4.29.5"
+  }
+}
