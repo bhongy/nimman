@@ -6,6 +6,9 @@
   "repository": "git@github.com:bhongy/nimman.git",
   "author": "Thanik Bhongbhibhat <email@thanik.me>",
   "license": "MIT",
+  "engines" : {
+    "node" : ">=8.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.6",
     "@types/node": "^8.10.40",
