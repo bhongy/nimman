@@ -1,6 +1,6 @@
 {
-  "include": ["lib/**/*.ts"],
-  "exclude": ["lib/**/*.test.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"],
   // "compileOnSave": true,
   "compilerOptions": {
     /* Basic Options */
