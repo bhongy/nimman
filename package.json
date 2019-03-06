@@ -6,13 +6,13 @@
   "repository": "git@github.com:bhongy/nimman.git",
   "author": "Thanik Bhongbhibhat <email@thanik.me>",
   "license": "MIT",
-  "engines" : {
-    "node" : ">=8.0.0"
+  "engines": {
+    "node": ">=8.0.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.6",
     "@types/node": "^8.10.40",
-    "@types/webpack": "^4.4.24",
+    "@types/webpack": "^4.4.25",
     "jest": "^24.1.0",
     "ts-jest": "^24.0.0",
     "typescript": "^3.2.4"

@@ -1,10 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
-import * as webpack from 'webpack';
 import { Compiler } from './Compiler';
 import { ServerInterface } from '../Server';
-import { fstat } from 'fs';
 
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
@@ -32,7 +30,7 @@ class DevServer implements ServerInterface {
     );
   }
 
-  start(): Promise<undefined> {
+  start(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.httpServer.once('error', reject);
       this.httpServer.once('listening', () => resolve());
@@ -40,9 +38,11 @@ class DevServer implements ServerInterface {
     });
   }
 
-  close(): Promise<undefined> {
+  close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.httpServer.close((err: Error) => (err ? reject(err) : resolve()));
+      this.httpServer.close((err?: Error) => {
+        err ? reject(err) : resolve();
+      });
     });
   }
 
