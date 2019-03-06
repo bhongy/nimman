@@ -7,6 +7,7 @@ import { ServerInterface } from '../Server';
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
 
+
   constructor(private readonly compiler: Compiler) {
     this.httpServer = http.createServer(
       (req: http.IncomingMessage, res: http.ServerResponse): void => {
@@ -40,7 +41,7 @@ class DevServer implements ServerInterface {
 
   close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.httpServer.close((err?: Error) => {
+      this.httpServer.close(err => {
         err ? reject(err) : resolve();
       });
     });
