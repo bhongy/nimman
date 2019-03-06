@@ -1,4 +1,4 @@
-# nimman
+# nimman (work in progress)
 A(nother prototype) Server-side Render Web Server Framework of mine.
 
 Written for Node 8 or higher.
