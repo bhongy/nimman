@@ -1,6 +1,6 @@
-import { routeMatcher } from './Routerv2';
+import { routeMatcher, isParamsRoute } from './RouteMatcher';
 
-describe('RouterV2', () => {
+describe('Router', () => {
   it('match exact routes', () => {
     expect.assertions(3);
 
@@ -33,7 +33,7 @@ describe('RouterV2', () => {
     const matchRoute = routeMatcher({
       '/foo/bar': foobarHandler,
       '/foo/:b': paramsFooHandler,
-      '/fizz'() {},
+      '/fizz/:abc'() {},
     });
 
     jest.clearAllMocks();
@@ -54,14 +54,25 @@ describe('RouterV2', () => {
     expect(paramsFooHandler).toHaveBeenCalledTimes(0);
 
     jest.clearAllMocks();
-    matchRoute('/foo/stuff').map(route => {
-      route.handler();
-      expect(route.pathname).toEqual('/foo/stuff');
-      // expect(route.params).toEqual({ b: 'stuff' });
-    });
+    matchRoute('/foo/stuff')
+      .filter(isParamsRoute)
+      .map(route => {
+        route.handler();
+        expect(route.pathname).toEqual('/foo/stuff');
+        // expect(route.params).toEqual({ b: 'stuff' });
+      });
 
     expect(foobarHandler).toHaveBeenCalledTimes(0);
     expect(paramsFooHandler).toHaveBeenCalledTimes(1);
+
+    jest.clearAllMocks();
+    matchRoute('/fizz/pigeon')
+      .filter(isParamsRoute)
+      .map(route => {
+        route.handler();
+        expect(route.pathname).toEqual('/fizz/pigeon');
+        expect(route.params).toEqual({ abc: 'pigeon' });
+      });
   });
 
   // it('parses params from route');
