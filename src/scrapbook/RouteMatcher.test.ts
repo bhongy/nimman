@@ -1,79 +1,69 @@
-import { routeMatcher, isParamsRoute } from './RouteMatcher';
+import { routeMatcher } from './RouteMatcher';
+import { none } from 'fp-ts/lib/Option';
 
-describe('Router', () => {
-  it('match exact routes', () => {
-    expect.assertions(3);
-
-    const foobarHandler = jest.fn();
+describe('RouteMatcher', () => {
+  describe('exact routes', () => {
+    const generalSettingsHandler = () => {};
     const matchRoute = routeMatcher({
-      '/foo/bar': foobarHandler,
-      '/fizz'() {},
+      '/'() {},
+      '/inbox'() {},
+      '/settings/general': generalSettingsHandler,
     });
 
-    jest.clearAllMocks();
-    // does not partially match
-    matchRoute('/foo').map(route => {
-      route.handler();
+    it('matches an exact route', () => {
+      expect.assertions(2);
+      matchRoute('/settings/general').map(route => {
+        expect(route.pathname).toBe('/settings/general');
+        expect(route.handler).toBe(generalSettingsHandler);
+      });
     });
 
-    expect(foobarHandler).toHaveBeenCalledTimes(0);
-
-    jest.clearAllMocks();
-    matchRoute('/foo/bar').map(route => {
-      route.handler();
-      expect(route.pathname).toEqual('/foo/bar');
+    it('does not partially match exact routes', () => {
+      expect(matchRoute('/settings')).toEqual(none);
     });
 
-    expect(foobarHandler).toHaveBeenCalledTimes(1);
+    // expect caller to extract and pass in just the pathname
+    it('does not match pathname with query', () => {
+      expect(matchRoute('/settings/general?q=baz')).toEqual(none);
+    });
   });
 
-  it('matches params routes if no exact match', () => {
-    const foobarHandler = jest.fn();
-    const paramsFooHandler = jest.fn();
+  describe('params routes', () => {
+    const importantMessageHandler = () => {};
+    const messageHandler = () => {};
+    const replyMessageHandler = () => {};
     const matchRoute = routeMatcher({
-      '/foo/bar': foobarHandler,
-      '/foo/:b': paramsFooHandler,
-      '/fizz/:abc'() {},
+      '/'() {},
+      '/inbox/important': importantMessageHandler,
+      '/inbox/:message': messageHandler,
+      '/inbox/:message/replies/:reply': replyMessageHandler,
+      '/settings/general'() {},
     });
 
-    jest.clearAllMocks();
-    matchRoute('/foo').map(route => {
-      route.handler();
-    });
-
-    expect(foobarHandler).toHaveBeenCalledTimes(0);
-    expect(paramsFooHandler).toHaveBeenCalledTimes(0);
-
-    jest.clearAllMocks();
-    // doesn't match both and match exact first
-    matchRoute('/foo/bar').map(route => {
-      route.handler();
-    });
-
-    expect(foobarHandler).toHaveBeenCalledTimes(1);
-    expect(paramsFooHandler).toHaveBeenCalledTimes(0);
-
-    jest.clearAllMocks();
-    matchRoute('/foo/stuff')
-      .filter(isParamsRoute)
-      .map(route => {
-        route.handler();
-        expect(route.pathname).toEqual('/foo/stuff');
-        // expect(route.params).toEqual({ b: 'stuff' });
+    it('matches exact route first, if existed', () => {
+      expect.assertions(2);
+      matchRoute('/inbox/important').map(route => {
+        expect(route.pathname).toBe('/inbox/important');
+        expect(route.handler).toBe(importantMessageHandler);
       });
+    });
 
-    expect(foobarHandler).toHaveBeenCalledTimes(0);
-    expect(paramsFooHandler).toHaveBeenCalledTimes(1);
-
-    jest.clearAllMocks();
-    matchRoute('/fizz/pigeon')
-      .filter(isParamsRoute)
-      .map(route => {
-        route.handler();
-        expect(route.pathname).toEqual('/fizz/pigeon');
-        expect(route.params).toEqual({ abc: 'pigeon' });
+    it('matches params route', () => {
+      expect.assertions(3);
+      matchRoute('/inbox/rl4mcq').map(route => {
+        expect(route.pathname).toBe('/inbox/rl4mcq');
+        expect(route.handler).toBe(messageHandler);
+        expect(route.params).toEqual({ message: 'rl4mcq' });
       });
+    });
+
+    it('matches nested params routes', () => {
+      expect.assertions(3);
+      matchRoute('/inbox/rl4mcq/replies/LsbSK').map(route => {
+        expect(route.pathname).toBe('/inbox/rl4mcq/replies/LsbSK');
+        expect(route.handler).toBe(replyMessageHandler);
+        expect(route.params).toEqual({ message: 'rl4mcq', reply: 'LsbSK' });
+      });
+    });
   });
-
-  // it('parses params from route');
 });
