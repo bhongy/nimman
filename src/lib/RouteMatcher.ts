@@ -1,9 +1,15 @@
 /**
  * RouteMatcher.
  *
- * Simply many-to-one maps (resolves) actual pathname (such as '/user/18303230')
+ * Simple many-to-one mapper (resolver)
+ * from an actual pathname (such as '/user/18303230')
  * to a handler function and a params record.
  *
+ * pathname1 \
+ * pathname2 - f -> (handler, params)
+ * pathnaem3 /
+ *
+ * Stateless.
  * I/O ignorant.
  */
 
@@ -27,7 +33,7 @@ type RouteMatcher<T extends Function> =
   // (pathname: ValidUrl.pathname): Route;
   (pathname: string) => Option<MatchedRoute<T>>;
 
-// this can be largely simplify if use TrieRouteMatcher O(M) lookup
+// this can be largely simplified if use TrieRouteMatcher O(M) lookup
 // which is efficient for both exact and params
 export const routeMatcher = <T extends Function>(routesMapping: {
   [pattern: string]: T;

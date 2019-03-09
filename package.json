@@ -9,6 +9,9 @@
   "engines": {
     "node": ">=8.0.0"
   },
+  "scripts": {
+    "clean": "rm -rf ./example/dist"
+  },
   "devDependencies": {
     "@types/immutable": "^3.8.7",
     "@types/jest": "^24.0.6",
