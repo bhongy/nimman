@@ -1,15 +1,14 @@
-import * as path from 'path';
 import * as webpack from 'webpack';
+import * as Project from './__Config';
 
 const webpackClientConfig: webpack.Configuration = {
   name: 'client',
   target: 'web',
   mode: 'development',
 
-  entry: { main: path.resolve(__dirname, '../../example/app/main.js') },
   output: {
-    path: path.resolve(__dirname, '../../example/dist'),
-    filename: 'main.js',
+    path: Project.dist,
+    filename: '[name].js',
   },
 
   // optimization: {

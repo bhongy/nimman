@@ -1,14 +1,15 @@
 import * as path from 'path';
 import * as webpack from 'webpack';
+import * as Project from './__Config';
 
 const webpackServerConfig: webpack.Configuration = {
   name: 'server',
   target: 'node',
   mode: 'development',
 
-  entry: { main: path.resolve(__dirname, '../../example/server/render.js') },
+  entry: { main: path.resolve(Project.root, 'server/render.js') },
   output: {
-    path: path.resolve(__dirname, '../../example/dist'),
+    path: Project.dist,
     filename: 'render.js',
     libraryTarget: 'commonjs2',
   },
