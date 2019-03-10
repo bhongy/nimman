@@ -9,11 +9,18 @@
 import * as webpack from 'webpack';
 import clientConfig from './webpackClientConfig';
 import serverConfig from './webpackServerConfig';
+import { createDependency } from 'webpack/lib/SingleEntryPlugin';
+import * as path from 'path';
+import * as Project from './__Config'; // TEMPORARY
 
 /**
  * A stateful object that will queue the callbacks during "not ready" state
  * and will "drain" (calls) all the callbacks synchronously when ready.
  * A callback being added during ready state will be executed right away.
+ * ---
+ * Thought: all we want to know is that all related bundles (client & server)
+ * to serve a specific route are built. We might be able to refactor it to
+ * notify per route.
  */
 class WaitUntilReady {
   private callbacks: Array<() => void> = [];
@@ -39,9 +46,33 @@ export class Compiler {
   private readonly waitUntilReady: WaitUntilReady;
 
   constructor() {
+    // How to I lift this state and mangage it in a less adhoc manner
+    // thinking of it as an event-driven state machine, an Actor?
     this.waitUntilReady = new WaitUntilReady();
     this.multicompiler = webpack([clientConfig, serverConfig]);
 
+    /**
+     * HACK it together for now
+     *
+     * Eventually, I want to model these to entities
+     * with well-defined/modeled communications
+     **/
+
+    const [clientCompiler] = this.multicompiler.compilers;
+    clientCompiler.hooks.make.tapPromise('Nimman.Compiler', compilation => {
+      // @ts-ignore
+      const { context } = compilation.options;
+      const name = 'main';
+      const entry = path.resolve(Project.src, 'main.js');
+      const dependency = createDependency(entry, name);
+      return new Promise((resolve, reject) => {
+        compilation.addEntry(context, dependency, name, (err: Error) =>
+          err ? reject(err) : resolve()
+        );
+      });
+    });
+
+    // TODO: make sure we cover all "watch" hooks
     // @ts-ignore: not sure why "hooks does not exist MultiCompiler"
     this.multicompiler.hooks.invalid.tap('Nimman.Compiler', () => {
       this.waitUntilReady.notReady();
@@ -49,7 +80,7 @@ export class Compiler {
     });
 
     // @ts-ignore: not sure why "hooks does not exist MultiCompiler"
-    this.multicompiler.hooks.done.tap('Nimman.Compiler', (stats: any) => {
+    this.multicompiler.hooks.done.tap('Nimman.Compiler', stats => {
       this.waitUntilReady.ready();
       const { startTime, endTime } = stats.stats[0];
       console.log(`compilation is done (${endTime - startTime}ms)`);

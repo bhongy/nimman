@@ -1,12 +1,23 @@
+/**
+ * ... the public interface to interact with Nimman DevServer
+ * ... simply fulfill requests (sending out responses) by delegating
+ *     to the underlying "services" like the compiler, router
+ *
+ * Purpose: ?
+ *
+ * Design: ?
+ *
+ * Network I/O aware.
+ */
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import { Compiler } from './Compiler';
 import { ServerInterface } from '../Server';
+import * as Project from './__Config'; // TEMPORARY
 
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
-
 
   constructor(private readonly compiler: Compiler) {
     this.httpServer = http.createServer(
@@ -15,7 +26,9 @@ class DevServer implements ServerInterface {
           // serve script
           if (req.url === '/static/main.js') {
             res.statusCode = 200;
-            const file = path.resolve(__dirname, '../../example/dist/main.js');
+            const file = path.resolve(Project.dist, 'main.js');
+            // TODO: use safe readfile (Either) and 404 when Left
+            // e.g. file not found or permission denied
             fs.createReadStream(file).pipe(res);
             return;
           }
@@ -26,6 +39,12 @@ class DevServer implements ServerInterface {
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
           res.write(html);
           res.end();
+
+          // const { handler } = matchRoute(req.url).fold(routeNotFound, identity);
+          // const response = handler({ headers: req.headers });
+          // res.writeHead(200, response.headers);
+          // res.write(response.body);
+          // res.end();
         });
       }
     );
@@ -47,6 +66,7 @@ class DevServer implements ServerInterface {
     });
   }
 
+  // is this the "server" entity's responsibility?
   get buildId() {
     // compilation.hash ?
     return 'development';
