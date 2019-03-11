@@ -10,7 +10,8 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "clean": "rm -rf ./example/dist"
+    "clean": "rm -rf ./example/dist",
+    "start": "yarn clean && node example/startServer"
   },
   "devDependencies": {
     "@types/immutable": "^3.8.7",
