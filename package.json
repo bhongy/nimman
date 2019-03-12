@@ -23,7 +23,7 @@
     "typescript": "^3.2.4"
   },
   "dependencies": {
-    "data-ts": "^1.0.2",
+    "data-ts": "^1.0.4",
     "fp-ts": "^1.14.3",
     "immutable": "^3.8.2",
     "route-parser": "^0.0.5",
