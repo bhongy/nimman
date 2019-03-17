@@ -28,6 +28,7 @@
     "fp-ts": "^1.14.3",
     "immutable": "^3.8.2",
     "route-parser": "^0.0.5",
+    "rxjs": "^6.4.0",
     "webpack": "^4.29.5"
   }
 }
