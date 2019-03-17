@@ -8,7 +8,11 @@ const webpackClientConfig: webpack.Configuration = {
   mode: 'development',
 
   // TEMPORARY until we handle on-demand (dynamic) entries
-  entry: { main: path.resolve(Project.src, 'main.js') },
+  entry: {
+    inbox: path.resolve(Project.src, 'inbox.js'),
+    message: path.resolve(Project.src, 'message.js'),
+    '404': path.resolve(Project.src, '404.js'),
+  },
   output: {
     path: Project.dist,
     filename: '[name].js',

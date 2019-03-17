@@ -23,8 +23,7 @@ const staticFileHandler: Handler = ({ filename }) =>
 import * as Project from './__Config'; // TEMPORARY
 import * as path from 'path';
 
-const page = 'main';
-const pageHandler: Handler = () =>
+const pageHandler = (page: string): Handler => () =>
   some(path.resolve(Project.dist, 'serverRender.js'))
     // don't wrap in tryCatch or fromNullable
     // because if this "require" causes an error
@@ -37,5 +36,7 @@ const pageHandler: Handler = () =>
 
 export const getRoute = routeMatcher<Handler>({
   '/static/:filename': staticFileHandler,
-  '/': pageHandler,
+  '/': pageHandler('inbox'),
+  '/message': pageHandler('message'),
+  '/404': pageHandler('404'),
 });
