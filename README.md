@@ -38,9 +38,4 @@ It is designed for server-side rendered, multi-pages, large-scale web applicatio
 
 - onDemandPageHandler: model all the states that it'll be in "building", "page not found" etc. early in the function then delegate to different strategies/handlers
 
-
-## Dependencies to add, maybe?
-
-- Sanctuary (functional, algebraic data structures) to program with effects
-- Immutable.js for persistent data structures
-- Rxjs to declaratively handle async control flow
+- example app: an email client like gmail
