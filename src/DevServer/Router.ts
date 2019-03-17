@@ -20,21 +20,22 @@ const staticFileHandler: Handler = ({ filename }) =>
     body,
   }));
 
-const createSingletonStream = (content: string) => {
-  const stream = new ReadableStream();
-  stream.push(content);
-  stream.push(null);
-  return stream;
-};
+import * as Project from './__Config'; // TEMPORARY
+import * as path from 'path';
 
-const homepageHtml = `<!DOCTYPE html><html><head><title>Nimman</title><link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"></head><body><script src="/static/main.js"></script></body></html>`;
-const pageHandler = (html: string): Handler => () =>
-  some({
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    body: createSingletonStream(html),
-  });
+const page = 'main';
+const pageHandler: Handler = () =>
+  some(path.resolve(Project.dist, 'serverRender.js'))
+    // don't wrap in tryCatch or fromNullable
+    // because if this "require" causes an error
+    // we should crash the process
+    .map(p => require(p).render)
+    .map(render => ({
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      body: render(page),
+    }));
 
-export const getRoute = routeMatcher({
+export const getRoute = routeMatcher<Handler>({
   '/static/:filename': staticFileHandler,
-  '/': pageHandler(homepageHtml),
+  '/': pageHandler,
 });

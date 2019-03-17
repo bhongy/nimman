@@ -10,7 +10,7 @@ const webpackServerConfig: webpack.Configuration = {
   entry: { main: path.resolve(Project.root, 'server/render.js') },
   output: {
     path: Project.dist,
-    filename: 'render.js',
+    filename: 'serverRender.js',
     libraryTarget: 'commonjs2',
   },
 

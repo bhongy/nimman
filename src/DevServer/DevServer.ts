@@ -1,20 +1,23 @@
 /**
- * ... the public interface to interact with Nimman DevServer
- * ... simply fulfill requests (sending out responses) by delegating
- *     to the underlying "services" like the compiler, router
- *
- * Purpose: ?
+ * Purpose: Simply fulfill requests (sending out responses) by delegating
+ *   to the underlying "services" like the compiler, router.
  *
  * Design: ?
  *
  * Network I/O aware.
  */
-import * as fs from 'fs';
-import * as path from 'path';
 import * as http from 'http';
+import { fromNullable } from 'fp-ts/lib/Option';
 import { Compiler } from './Compiler';
+import { getRoute } from './Router';
 import { ServerInterface } from '../Server';
-import * as Project from './__Config'; // TEMPORARY
+
+const resolveRouteResponse = (requestUrl: undefined | string) =>
+  fromNullable(requestUrl)
+    // TODO: validate url + ensure valid pathname + remove querystring
+    .chain(getRoute)
+    .chain(({ handler, params }) => handler(params))
+    .toNullable();
 
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
@@ -22,29 +25,15 @@ class DevServer implements ServerInterface {
   constructor(private readonly compiler: Compiler) {
     this.httpServer = http.createServer(
       (req: http.IncomingMessage, res: http.ServerResponse): void => {
+        const r = resolveRouteResponse(req.url);
         this.compiler.whenReady(() => {
-          // serve script
-          if (req.url === '/static/main.js') {
-            res.statusCode = 200;
-            const file = path.resolve(Project.dist, 'main.js');
-            // TODO: use safe readfile (Either) and 404 when Left
-            // e.g. file not found or permission denied
-            fs.createReadStream(file).pipe(res);
-            return;
+          if (r == null) {
+            res.statusCode = 404;
+            return res.end();
           }
 
-          // serve page
-          const html = `<!DOCTYPE html><html><head><title>Nimman</title></head><body><script src="/static/main.js"></script></body></html>`;
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
-          res.write(html);
-          res.end();
-
-          // const { handler } = matchRoute(req.url).fold(routeNotFound, identity);
-          // const response = handler({ headers: req.headers });
-          // res.writeHead(200, response.headers);
-          // res.write(response.body);
-          // res.end();
+          res.writeHead(200, r.headers);
+          r.body.pipe(res);
         });
       }
     );
