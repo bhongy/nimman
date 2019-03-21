@@ -8,6 +8,7 @@
 import { Option, option, fromNullable } from 'fp-ts/lib/Option';
 import { Readable as ReadableStream } from 'stream';
 import { requestStaticAsset } from './StaticAssetProvider';
+import { renderPage } from './PageRenderer';
 import { routeMatcher } from '../lib/RouteMatcher';
 
 interface Handler {
@@ -28,20 +29,13 @@ const staticFileHandler: Handler = ({ filename }) =>
       body,
     }));
 
-import * as Project from './__Config'; // TEMPORARY
-import * as path from 'path';
-
+// TODO: figure out a way to generalize `pageHandler`
+// so we don't create closure for each page
 const pageHandler = (page: string): Handler => () =>
-  option
-    .of(path.resolve(Project.dist, 'serverRender.js'))
-    // don't wrap in tryCatch or fromNullable
-    // because if this "require" causes an error
-    // we should crash the entire DevServer
-    .map(p => require(p).render)
-    .map(render => ({
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      body: render(page),
-    }));
+  option.of(renderPage(page)).map(body => ({
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    body,
+  }));
 
 export const getRoute = routeMatcher<Handler>({
   '/static/:filename': staticFileHandler,
