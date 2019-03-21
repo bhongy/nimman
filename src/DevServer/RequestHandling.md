@@ -13,6 +13,7 @@
 - server holds the response until the compilation for the route is ready
   - both server and client compilations
   - server -> to render html document
+    (`PageRenderer` depends on `ServerCompiler`) {per request if compilation in progress}
   - client -> to create static assets i.e. bundles
 - server renders html with:
   - server render bundle (handler)
