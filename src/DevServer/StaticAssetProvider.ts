@@ -12,13 +12,8 @@ import * as path from 'path';
 import { Readable as ReadableStream } from 'stream';
 import { Option, option, tryCatch } from 'fp-ts/lib/Option';
 
-export interface StaticAssetProvider {
-  request(filename: string): Option<ReadableStream>;
-}
-
-export const staticAssetProvider: StaticAssetProvider = {
-  request: filename =>
-    option
-      .of(path.resolve(Project.dist, filename))
-      .chain(filepath => tryCatch(() => fs.createReadStream(filepath))),
-};
+// `filename` is something like `message.js` (not a path)
+export const requestStaticAsset = (filename: string): Option<ReadableStream> =>
+  option
+    .of(path.resolve(Project.dist, filename))
+    .chain(filepath => tryCatch(() => fs.createReadStream(filepath)));

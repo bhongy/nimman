@@ -16,6 +16,7 @@ const resolveRouteResponse = (requestUrl: undefined | string) =>
   fromNullable(requestUrl)
     // TODO: validate url + ensure valid pathname + remove querystring
     .chain(getRoute)
+    // should this concern be in the Router?
     .chain(({ handler, params }) => handler(params))
     .toNullable();
 
@@ -25,6 +26,9 @@ class DevServer implements ServerInterface {
   constructor(private readonly compiler: Compiler) {
     this.httpServer = http.createServer(
       (req: http.IncomingMessage, res: http.ServerResponse): void => {
+        /**
+         * HACK it together for now
+         */
         const r = resolveRouteResponse(req.url);
         this.compiler.whenReady(() => {
           if (r == null) {
