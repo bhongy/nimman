@@ -1,13 +1,15 @@
 import { Readable as ReadableStream } from 'stream';
 
-const createSingletonStream = content => {
-  const stream = new ReadableStream();
-  stream.push(content);
-  stream.push(null);
-  return stream;
-};
+const createSingletonStream = content =>
+  new ReadableStream({
+    read() {
+      this.push(content);
+      this.push(null);
+    },
+  });
 
-export const render = (page /*, clientStats */) => createSingletonStream(`
+export const render = (page /*, clientStats */) =>
+  createSingletonStream(`
   <!DOCTYPE html>
   <html>
     <head>
