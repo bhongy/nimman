@@ -21,7 +21,7 @@
     "@types/webpack": "^4.4.25",
     "jest": "^24.1.0",
     "ts-jest": "^24.0.0",
-    "typescript": "^3.2.4"
+    "typescript": "^3.4.1"
   },
   "dependencies": {
     "data-ts": "^1.0.4",
