@@ -3,7 +3,7 @@
  * that we make a request to so the caller can be I/O ignorant
  * it could as well go out to CDN for all we care
  *
- * Boundary.
+ * Boundary. [TODO] create __mock__
  * I/O aware.
  */
 import * as Project from './__Config'; // TEMPORARY
@@ -15,5 +15,5 @@ import { Option, option, tryCatch } from 'fp-ts/lib/Option';
 // `filename` is something like `message.js` (not a path)
 export const requestStaticAsset = (filename: string): Option<ReadableStream> =>
   option
-    .of(path.resolve(Project.dist, filename))
+    .of(path.join(Project.dist, filename))
     .chain(filepath => tryCatch(() => fs.createReadStream(filepath)));

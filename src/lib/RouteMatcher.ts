@@ -22,7 +22,8 @@ import RouteParser = require('route-parser');
 // https://github.com/Microsoft/TypeScript/issues/9235
 // Wraps with `Partial` makes it safer
 // so Typescript errors if we don't handle the nullable case
-type Params = Partial<Record<string, string>>;
+// TODO: add project-wide type constructor `StrictRecord<K,V>`
+export type Params = Partial<Record<string, string>>;
 
 class MatchedRoute<T> {
   constructor(

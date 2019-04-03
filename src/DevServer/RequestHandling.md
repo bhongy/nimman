@@ -5,11 +5,12 @@
   - `req.url` -> `PageRequest { url, pattern, params, ... }`
 - compiler compiles server and client bundles for the page
   - only compiles related bundles for the page (dynamic entry)
-  - skip the compilation if no change (file system)
-    i.e. reloading the page will not recompile the bundle
   - will not compile (on file change)
     unless the request for the related page/entry is received
+  - skip the compilation if no change (file system)
+    i.e. reloading the page will not recompile the bundle
   - (maybe server "requests" the compiler to do it for a page)
+    ? treat compiler as an external service (latency == compilation)
 - server holds the response until the compilation for the route is ready
   - both server and client compilations
   - server -> to render html document

@@ -1,4 +1,6 @@
 /**
+ * v0 - hacking together for now
+ *
  * `serverRender.js` is not ready until webpack server compilation finished
  * this needs to be refactored so that it's part of the compilation life-cycle
  *
