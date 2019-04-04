@@ -1,7 +1,6 @@
 {
   "include": ["src/**/*.ts"],
   "exclude": [
-    "src/scrapbook/**/*.ts",
     "src/**/*.test.ts"
   ],
   // "compileOnSave": true,
