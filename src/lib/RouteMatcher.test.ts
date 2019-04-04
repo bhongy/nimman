@@ -48,6 +48,12 @@ describe('RouteMatcher', () => {
       });
     });
 
+    it('does not accidentally match without params', () => {
+      expect.assertions(2);
+      expect(matchRoute('/inbox')).toEqual(none);
+      expect(matchRoute('/inbox/')).toEqual(none);
+    });
+
     it('matches params route', () => {
       expect.assertions(3);
       matchRoute('/inbox/rl4mcq').map(route => {
