@@ -21,10 +21,15 @@ const resolveRouteResponse = (requestUrl: undefined | string) =>
     .chain(validateUrl)
     .chain(Router.resolveResponse);
 
-const makeRequestHandler = (compiler: Compiler) => (
+type HttpRequestHandler = (
   req: http.IncomingMessage,
   res: http.ServerResponse
-): void => {
+) => void;
+
+const makeRequestHandler = (compiler: Compiler): HttpRequestHandler => (
+  req,
+  res
+) => {
   /**
    * HACK it together for now
    */
@@ -45,8 +50,8 @@ const makeRequestHandler = (compiler: Compiler) => (
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
 
-  constructor(compiler: Compiler) {
-    this.httpServer = http.createServer(makeRequestHandler(compiler));
+  constructor(requestHandler: HttpRequestHandler) {
+    this.httpServer = http.createServer(requestHandler);
   }
 
   start(): Promise<void> {
@@ -74,5 +79,6 @@ class DevServer implements ServerInterface {
 
 export function createDevServer(/* port: number */) {
   const compiler = new Compiler();
-  return new DevServer(compiler);
+  const requestHandler = makeRequestHandler(compiler);
+  return new DevServer(requestHandler);
 }
