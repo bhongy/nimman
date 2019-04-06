@@ -26,6 +26,8 @@ type HttpRequestHandler = (
   res: http.ServerResponse
 ) => void;
 
+// TODO: this should take `router` ("move" resolveRouteResponse in here)
+// figure out the contract between router <> handler
 const makeRequestHandler = (compiler: Compiler): HttpRequestHandler => (
   req,
   res
@@ -54,11 +56,12 @@ class DevServer implements ServerInterface {
     this.httpServer = http.createServer(requestHandler);
   }
 
-  start(): Promise<void> {
+  // `start` is called by "user" we cannot statically guarantee the type
+  start(port: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       this.httpServer.once('error', reject);
       this.httpServer.once('listening', () => resolve());
-      this.httpServer.listen(3000);
+      this.httpServer.listen(port);
     });
   }
 
@@ -77,7 +80,7 @@ class DevServer implements ServerInterface {
   }
 }
 
-export function createDevServer(/* port: number */) {
+export function createDevServer() {
   const compiler = new Compiler();
   const requestHandler = makeRequestHandler(compiler);
   return new DevServer(requestHandler);

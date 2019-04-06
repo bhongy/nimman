@@ -3,6 +3,7 @@
 const { createDevServer } = require('../dist/DevServer/DevServer');
 
 (async () => {
-  await createDevServer().start();
-  console.log('Server is ready: http://localhost:3000');
+  const port = 3000;
+  await createDevServer().start(port);
+  console.log(`Server is ready: http://localhost:${port}`);
 })();
