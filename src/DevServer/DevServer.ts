@@ -9,16 +9,17 @@
 import * as http from 'http';
 import { fromNullable } from 'fp-ts/lib/Option';
 import { Compiler } from './Compiler';
-import { getRoute } from './Router';
+import * as Router from './Router';
 import { ServerInterface } from '../Server';
+import { validateUrl } from '../scrapbook/Url';
 
+// this is in DevServer to keep request -> URL concern in server
+// router "takes" is network ignorant ... should it not know URL also?
+// ... might be better inline?
 const resolveRouteResponse = (requestUrl: undefined | string) =>
   fromNullable(requestUrl)
-    // TODO: validate url + ensure valid pathname + remove querystring
-    .chain(getRoute)
-    // should this concern be in the Router?
-    .chain(({ handler, params }) => handler(params))
-    .toNullable();
+    .chain(validateUrl)
+    .chain(Router.resolveResponse);
 
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
@@ -29,7 +30,9 @@ class DevServer implements ServerInterface {
         /**
          * HACK it together for now
          */
-        const r = resolveRouteResponse(req.url);
+        // temporary: drop from Option (toNullable)
+        // until I understand how to use `IO`
+        const r = resolveRouteResponse(req.url).toNullable();
         this.compiler.whenReady(() => {
           if (r == null) {
             res.statusCode = 404;
