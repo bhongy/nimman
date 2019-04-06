@@ -1,6 +1,6 @@
 /**
  * a thin boundary entity - think of this as a service
- * that we make a request to so the caller can be I/O ignorant
+ * that we make a request _to_ so the caller can be I/O ignorant
  * it could as well go out to CDN for all we care
  *
  * Boundary. [TODO] create __mock__

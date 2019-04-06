@@ -13,7 +13,7 @@
  */
 import { Option, option, fromNullable } from 'fp-ts/lib/Option';
 import { Readable as ReadableStream } from 'stream';
-import { requestStaticAsset } from './StaticAssetService';
+import { requestStaticAsset } from './StaticAssetAdapter';
 import { renderPage } from './PageRenderer';
 import { routeMatcher, Params } from '../lib/RouteMatcher';
 
