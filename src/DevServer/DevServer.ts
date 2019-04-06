@@ -21,29 +21,32 @@ const resolveRouteResponse = (requestUrl: undefined | string) =>
     .chain(validateUrl)
     .chain(Router.resolveResponse);
 
+const makeRequestHandler = (compiler: Compiler) => (
+  req: http.IncomingMessage,
+  res: http.ServerResponse
+): void => {
+  /**
+   * HACK it together for now
+   */
+  // temporary: drop from Option (toNullable)
+  // until I understand how to use `IO`
+  const r = resolveRouteResponse(req.url).toNullable();
+  compiler.whenReady(() => {
+    if (r == null) {
+      res.statusCode = 404;
+      return res.end();
+    }
+
+    res.writeHead(200, r.headers);
+    r.body.pipe(res);
+  });
+};
+
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
 
-  constructor(private readonly compiler: Compiler) {
-    this.httpServer = http.createServer(
-      (req: http.IncomingMessage, res: http.ServerResponse): void => {
-        /**
-         * HACK it together for now
-         */
-        // temporary: drop from Option (toNullable)
-        // until I understand how to use `IO`
-        const r = resolveRouteResponse(req.url).toNullable();
-        this.compiler.whenReady(() => {
-          if (r == null) {
-            res.statusCode = 404;
-            return res.end();
-          }
-
-          res.writeHead(200, r.headers);
-          r.body.pipe(res);
-        });
-      }
-    );
+  constructor(compiler: Compiler) {
+    this.httpServer = http.createServer(makeRequestHandler(compiler));
   }
 
   start(): Promise<void> {
