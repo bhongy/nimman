@@ -21,10 +21,9 @@ const resolveRouteResponse = (requestUrl: undefined | string) =>
     .chain(validateUrl)
     .chain(Router.resolveResponse);
 
-type HttpRequestHandler = (
-  req: http.IncomingMessage,
-  res: http.ServerResponse
-) => void;
+interface HttpRequestHandler {
+  (req: http.IncomingMessage, res: http.ServerResponse): void;
+}
 
 // TODO: this should take `router` ("move" resolveRouteResponse in here)
 // figure out the contract between router <> handler

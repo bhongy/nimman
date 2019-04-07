@@ -8,7 +8,7 @@ export const createSingletonStream = (content: string): ReadableStream =>
     },
   });
 
-export const streamToString = (stream: ReadableStream): Promise<String> =>
+export const streamToString = (stream: ReadableStream): Promise<string> =>
   new Promise((resolve, reject) => {
     let str = '';
     stream.on('error', reject);

@@ -26,9 +26,10 @@
  */
 import { Option, option, fromNullable } from 'fp-ts/lib/Option';
 import { Readable as ReadableStream } from 'stream';
-import { requestStaticAsset } from './StaticAssetAdapter';
+import { handler as staticAssetHandler } from './StaticAssetHandler';
 import { renderPage } from './PageRenderer';
 import { routeMatcher, Params } from '../lib/RouteMatcher';
+export { Params } from '../lib/RouteMatcher';
 
 interface Router {
   // (url: URL): Task<Response>; // (async, lazy, can fail)
@@ -44,23 +45,9 @@ interface Response {
 
 // consider as an implementation detail (internal) of the Router
 // Router delegates Response creation to an instance of Handler
-interface Handler {
+export interface Handler {
   (params: Params): Option<Response>;
 }
-
-const goodStaticFileResponse = (body: ReadableStream): Response => ({
-  statusCode: 200,
-  headers: { 'Content-Type': 'text/javascript; charset=utf-8' },
-  body,
-});
-
-// this will get larger as we generalize to handle more MIME types
-// TODO: split into it's own module
-const staticFileHandler = (params: Params): Option<Response> =>
-  fromNullable(params.filename)
-    .chain(requestStaticAsset)
-    .map(goodStaticFileResponse);
-    // otherwise(StaticFile.NotFound /*: Response */)
 
 const goodPageResponse = (body: ReadableStream): Response => ({
   statusCode: 200,
@@ -78,7 +65,7 @@ const pageHandler = (entryChunkname: string): Handler => () =>
 // idea: multi-layer routing?
 // if it's a page -> delegate to page "router"
 const matcher = routeMatcher({
-  '/static/:filename': staticFileHandler, // is this a "route"?
+  '/static/:filename': staticAssetHandler, // is this a "route"?
   '/': pageHandler('inbox'),
 });
 
@@ -89,7 +76,7 @@ const matcher2 = [
 ]
 */
 
-export const resolveResponse /*: Router */ = (url: URL): Option<Response> =>
+export const resolveResponse: Router = (url: URL): Option<Response> =>
   // > hard-coded dependency: `matcher`
   matcher(url.pathname).chain(({ params, handler }) => handler(params));
 
