@@ -8,5 +8,5 @@ const fakeFileSystem: Record<string, ReadableStream> = {
   'foobar.js': createSingletonStream('fake js content'),
 };
 
-export const requestStaticAsset = (filename: string): Option<ReadableStream> =>
+export const requestFile = (filename: string): Option<ReadableStream> =>
   fromNullable(fakeFileSystem[filename]);

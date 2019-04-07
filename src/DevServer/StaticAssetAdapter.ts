@@ -15,7 +15,7 @@ import { Option, option, tryCatch } from 'fp-ts/lib/Option';
 // TODO: should return Task (async, can fail with reason) of ReadableStream
 //   let the handler converts to "Not Found" in failure case
 // `filename` is something like `message.js` (not a path)
-export const requestStaticAsset = (filename: string): Option<ReadableStream> =>
+export const requestFile = (filename: string): Option<ReadableStream> =>
   option
     .of(path.join(Project.dist, filename))
     .chain(filepath => tryCatch(() => fs.createReadStream(filepath)));
