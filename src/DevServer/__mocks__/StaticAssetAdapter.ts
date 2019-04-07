@@ -5,7 +5,6 @@ import { Option } from 'fp-ts/lib/Option';
 
 const fakeFileSystem: Record<string, ReadableStream> = {
   'should-find.txt': createSingletonStream('fakeContent from should-find.txt'),
-  'foobar.js': createSingletonStream('fake js content'),
 };
 
 export const requestFile = (filename: string): Option<ReadableStream> =>

@@ -9,19 +9,13 @@ import { tempHandler as handler } from './StaticAssetHandler';
 describe('StaticAssetHandler', () => {
   describe('request existing files', () => {
     it('returns Some(ContentStream) of the file', async () => {
-      expect.assertions(2);
+      expect.assertions(1);
 
-      const re1 = await handler({ filename: 'should-find.txt' })
+      const content = await handler({ filename: 'should-find.txt' })
         .map(streamToString)
         .toNullable();
 
-      expect(re1).toBe('fakeContent from should-find.txt');
-
-      const re2 = await handler({ filename: 'foobar.js' })
-        .map(streamToString)
-        .toNullable();
-
-      expect(re2).toBe('fake js content');
+      expect(content).toBe('fakeContent from should-find.txt');
     });
   });
 
