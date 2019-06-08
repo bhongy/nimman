@@ -43,6 +43,8 @@ Primary feature is to serve static files build by webpack.
 ## Next.js
 
 - [ ] ...
+- [ ] provide BUILD_ID - also consider serverless case
+- [ ] ... page manifest - more like how to know current information about pages
 - [ ] affect document `<head>` from component (e.g. update `<title>`)
 - [ ] ...
 
