@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "data-ts": "^1.0.4",
-    "fp-ts": "^1.14.3",
+    "fp-ts": "^1.18.2",
     "immutable": "^3.8.2",
     "route-parser": "^0.0.5",
     "rxjs": "^6.4.0",
