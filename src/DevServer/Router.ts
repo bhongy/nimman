@@ -24,20 +24,23 @@
  *
  * [TODO] refactor so it's testable
  */
-import { Option, option, fromNullable } from 'fp-ts/lib/Option';
-import { Task } from 'fp-ts/lib/Task';
+import { Task, task } from 'fp-ts/lib/Task';
 import { Readable as ReadableStream } from 'stream';
 import { handler as staticAssetHandler } from './StaticAssetHandler';
 import { renderPage } from './PageRenderer';
 import { routeMatcher, Params } from '../lib/RouteMatcher';
-export { Params } from '../lib/RouteMatcher';
+import { createSingletonStream } from '../scrapbook/StreamUtils';
 
-interface Router {
-  // (url: URL): Task<Response>; // (async, lazy, can fail)
-  (url: URL): Option<Response>;
-}
-
-// PageResponse, FileResponse
+/**
+ * Response interface enforces contract that the caller is guaranteed
+ * to have access these properties and can make assumption how to transform
+ * or send it over the wire
+ *
+ * Q: should use `NimmanServer.Response` as the output position?
+ *    PageResponse | FileResponse
+ *
+ * This model is probably wrong because RedirectResponse doesn't have body
+ */
 export interface Response {
   readonly statusCode: 200 | 404;
   readonly headers: { 'Content-Type': string };
@@ -58,14 +61,14 @@ export interface Handler {
 
 const goodPageResponse = (body: ReadableStream): Response => ({
   statusCode: 200,
-  headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  headers: { 'Content-Type': 'text/html' },
   body,
 });
 
-// ! leak knowledge about webpack
+// ! leak knowledge about webpack - should take `PageRoute` or something instead
 // TEMPORARY: its design is going to change a lot to support server-side render
 const pageHandler = (entryChunkname: string): Handler => () =>
-  option.of(renderPage(entryChunkname)).map(goodPageResponse);
+  task.of(renderPage(entryChunkname)).map(goodPageResponse);
 
 // type Route = [string /* pattern */, Handler];
 
@@ -73,6 +76,8 @@ const matcher = routeMatcher({
   '/static/:filename': staticAssetHandler, // is this a "route"?
   // idea: multi-layer routing? if it's a page -> delegate to page "router"
   '/': pageHandler('inbox'),
+  '/message': pageHandler('message'),
+  '/404': pageHandler('404'),
 });
 
 /*
@@ -82,9 +87,35 @@ const matcher2 = [
 ]
 */
 
-export const resolveResponse: Router = (url: URL): Option<Response> =>
+// TEMPORARY: the URL type currently represents the request
+// this should be a dedicate `NimmanServer.Request` type
+// that captures all information about the request including user, session, etc.
+namespace NimmanServer {
+  export type Request = URL;
+  // export type Response =
+  //   | HtmlDocumentResponse
+  //   | StaticFileResponse
+  //   | NotFoundResponse;
+}
+
+class NotFoundResponse implements Response {
+  readonly statusCode = 404;
+  readonly headers = { 'Content-Type': 'text/plain' };
+  readonly body = createSingletonStream('file not found');
+}
+
+// Request -> Handler -> Response
+// encapsulate knowledge of "Route" without leaking to the next level
+// - call handler with params
+// - ** guarantees to "always" return a response
+export const resolveResponse = (
+  request: NimmanServer.Request
+): Task<Response> =>
   // > hard-coded dependency: `matcher`
-  matcher(url.pathname).chain(({ params, handler }) => handler(params));
+  matcher(request.pathname).foldL(
+    () => task.of(new NotFoundResponse()),
+    ({ handler, params }) => handler(params)
+  );
 
 // ---
 
@@ -96,8 +127,4 @@ class RedirectResponse {
   constructor(redirectTo: string) {
     this.headers = { Location: redirectTo };
   }
-}
-
-class NotFoundResponse {
-  readonly statusCode = 404;
 }

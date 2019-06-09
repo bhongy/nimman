@@ -7,44 +7,31 @@
  * Network I/O aware.
  */
 import * as http from 'http';
-import { fromNullable } from 'fp-ts/lib/Option';
 import { Compiler } from './Compiler';
 import * as Router from './Router';
 import { ServerInterface } from '../Server';
-import { validateUrl } from '../scrapbook/Url';
-
-// this is in DevServer to keep request -> URL concern in server
-// router "takes" is network ignorant ... should it not know URL also?
-// ... might be better inline?
-const resolveRouteResponse = (requestUrl: undefined | string) =>
-  fromNullable(requestUrl)
-    .chain(validateUrl)
-    .chain(Router.resolveResponse);
 
 interface HttpRequestHandler {
   (req: http.IncomingMessage, res: http.ServerResponse): void;
 }
 
-// TODO: this should take `router` ("move" resolveRouteResponse in here)
-// figure out the contract between router <> handler
 const makeRequestHandler = (compiler: Compiler): HttpRequestHandler => (
   req,
   res
 ) => {
   /**
-   * HACK it together for now
+   * HACK together for now
    */
-  // temporary: drop from Option (toNullable)
-  // until I understand how to use `IO`
-  const r = resolveRouteResponse(req.url).toNullable();
+  const url = new URL(req.url || '', 'http://localhost:3000');
+  const responseResolved = Router.resolveResponse(url).run();
   compiler.whenReady(() => {
-    if (r == null) {
-      res.statusCode = 404;
-      return res.end();
-    }
-
-    res.writeHead(200, r.headers);
-    r.body.pipe(res);
+    responseResolved.then(({ statusCode, headers, body }) => {
+      // TODO: better way to validate, construct headers
+      // if Content-Type is wrong (e.g. plain/text instead of text/plain)
+      // it fails silently in browser and hard to debug
+      res.writeHead(statusCode, headers);
+      body.pipe(res);
+    });
   });
 };
 
