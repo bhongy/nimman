@@ -36,20 +36,38 @@ export class UpstreamTimeout {
   }
 }
 
+/**
+ * TaskEither-ify of fs.access.
+ *
+ * @param filepath an _absolute_ path on the file system
+ * @param mode fs.constants (File Access Constants)
+ * https://nodejs.org/docs/latest-v8.x/api/fs.html#fs_fs_constants_1
+ *
+ * In success case, returns the input filepath as-is
+ * so the caller doesn't have to keep it in scope.
+ */
+const checkFileAccess = (
+  filepath: string,
+  mode: number
+): TaskEither<NodeJS.ErrnoException, string> =>
+  tryCatch(
+    () =>
+      new Promise((resolve, reject) => {
+        fs.access(filepath, mode, e => (e ? reject(e) : resolve(filepath)));
+      }),
+    // Promise does not passthrough type of the reason for rejection
+    // TODO: use `infer` to thread through the `error` type
+    e => e as NodeJS.ErrnoException
+  );
+
 // `filename` is something like `message.js` (not a path)
 export const requestFile = (
   filename: string
 ): TaskEither<RequestFileFailure, stream.Readable> =>
-  tryCatch(
-    () =>
-      new Promise((resolve, reject) => {
-        const filepath = path.join(Project.dist, filename);
-        fs.access(filepath, fs.constants.R_OK, err => {
-          err ? reject(err) : resolve(fs.createReadStream(filepath));
-        });
-      }),
+  checkFileAccess(path.join(Project.dist, filename), fs.constants.R_OK).bimap(
     // TODO: do _not_ make all failures FileNotFound
-    () => new FileNotFound()
+    () => new FileNotFound(),
+    fs.createReadStream
   );
 
 // rename to OnDiskWebpackBundleAdapter implements StaticAssetAdapter ?
