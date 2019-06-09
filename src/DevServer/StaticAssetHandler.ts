@@ -24,7 +24,7 @@ class FileNotFound implements Router.Response {
   readonly body = createSingletonStream('file not found');
 }
 
-type Response = FileExisted | FileNotFound;
+type StaticFileResponse = FileExisted | FileNotFound;
 
 const fileExisted = (body: stream.Readable) => new FileExisted(body);
 const fileNotFound = () => new FileNotFound();
@@ -33,7 +33,9 @@ const fileNotFound = () => new FileNotFound();
 export const handler: Router.Handler = params =>
   fromNullable(params.filename)
     // : Option<Task<Response>>
-    .map(f => requestFile(f).fold<Response>(fileNotFound, fileExisted))
+    .map(filename =>
+      requestFile(filename).fold<StaticFileResponse>(fileNotFound, fileExisted)
+    )
     // : Task<Response>
     .getOrElseL(() => task.of(fileNotFound()));
 // otherwise(StaticFile.NotFound /*: Response */)
