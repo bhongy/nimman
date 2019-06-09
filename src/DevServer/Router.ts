@@ -25,6 +25,7 @@
  * [TODO] refactor so it's testable
  */
 import { Option, option, fromNullable } from 'fp-ts/lib/Option';
+import { Task } from 'fp-ts/lib/Task';
 import { Readable as ReadableStream } from 'stream';
 import { handler as staticAssetHandler } from './StaticAssetHandler';
 import { renderPage } from './PageRenderer';
@@ -37,7 +38,7 @@ interface Router {
 }
 
 // PageResponse, FileResponse
-interface Response {
+export interface Response {
   readonly statusCode: 200 | 404;
   readonly headers: { 'Content-Type': string };
   readonly body: ReadableStream;
@@ -46,8 +47,14 @@ interface Response {
 // consider as an implementation detail (internal) of the Router
 // Router delegates Response creation to an instance of Handler
 export interface Handler {
-  (params: Params): Option<Response>;
+  (params: Params): Task<Response>;
 }
+
+// a different idea: instead of Handler we use Route
+// which is a union of different Route types
+// e.g. InboxRoute { handler: () => ... }
+// e.g. MessageRoute { messageId: string, handler: (messageId: string) => ... }
+// https://github.com/gcanti/fp-ts-routing (read source)
 
 const goodPageResponse = (body: ReadableStream): Response => ({
   statusCode: 200,
@@ -62,10 +69,9 @@ const pageHandler = (entryChunkname: string): Handler => () =>
 
 // type Route = [string /* pattern */, Handler];
 
-// idea: multi-layer routing?
-// if it's a page -> delegate to page "router"
 const matcher = routeMatcher({
   '/static/:filename': staticAssetHandler, // is this a "route"?
+  // idea: multi-layer routing? if it's a page -> delegate to page "router"
   '/': pageHandler('inbox'),
 });
 

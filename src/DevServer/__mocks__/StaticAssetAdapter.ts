@@ -1,11 +1,15 @@
-import { fromNullable } from 'fp-ts/lib/Option';
+import { task } from 'fp-ts/lib/Task';
+import { fromNullable as eitherFromNullable } from 'fp-ts/lib/Either';
 import { Readable as ReadableStream } from 'stream';
 import { createSingletonStream } from '../../scrapbook/StreamUtils';
-import { Option } from 'fp-ts/lib/Option';
 
 const fakeFileSystem: Record<string, ReadableStream> = {
   'should-find.txt': createSingletonStream('fakeContent from should-find.txt'),
 };
 
-export const requestFile = (filename: string): Option<ReadableStream> =>
-  fromNullable(fakeFileSystem[filename]);
+const notFoundIfNullable = eitherFromNullable(
+  createSingletonStream('file not found')
+);
+
+export const requestFile = (filename: string) =>
+  task.of(fakeFileSystem[filename]).map(notFoundIfNullable);
