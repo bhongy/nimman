@@ -17,7 +17,13 @@ import * as $Array from 'fp-ts/lib/Array';
 import { Option, fromNullable } from 'fp-ts/lib/Option';
 import RouteParser = require('route-parser');
 
-type Params = Record<string, string>;
+// Typescript decides on convenience over soundness here
+// value type from accessing an index will not be nullable
+// https://github.com/Microsoft/TypeScript/issues/9235
+// Wraps with `Partial` makes it safer
+// so Typescript errors if we don't handle the nullable case
+// TODO: add project-wide type constructor `StrictRecord<K,V>`
+export type Params = Partial<Record<string, string>>;
 
 class MatchedRoute<T> {
   constructor(

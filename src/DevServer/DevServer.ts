@@ -1,60 +1,53 @@
 /**
- * ... the public interface to interact with Nimman DevServer
- * ... simply fulfill requests (sending out responses) by delegating
- *     to the underlying "services" like the compiler, router
- *
- * Purpose: ?
+ * Purpose: Simply fulfill requests (sending out responses) by delegating
+ *   to the underlying "services" like the compiler, router.
  *
  * Design: ?
  *
  * Network I/O aware.
  */
-import * as fs from 'fs';
-import * as path from 'path';
 import * as http from 'http';
 import { Compiler } from './Compiler';
+import * as Router from './Router';
 import { ServerInterface } from '../Server';
-import * as Project from './__Config'; // TEMPORARY
+
+interface HttpRequestHandler {
+  (req: http.IncomingMessage, res: http.ServerResponse): void;
+}
+
+const makeRequestHandler = (compiler: Compiler): HttpRequestHandler => (
+  req,
+  res
+) => {
+  /**
+   * HACK together for now
+   */
+  const url = new URL(req.url || '', 'http://localhost:3000');
+  const responseResolved = Router.resolveResponse(url).run();
+  compiler.whenReady(() => {
+    responseResolved.then(({ statusCode, headers, body }) => {
+      // TODO: better way to validate, construct headers
+      // if Content-Type is wrong (e.g. plain/text instead of text/plain)
+      // it fails silently in browser and hard to debug
+      res.writeHead(statusCode, headers);
+      body.pipe(res);
+    });
+  });
+};
 
 class DevServer implements ServerInterface {
   private readonly httpServer: http.Server;
 
-  constructor(private readonly compiler: Compiler) {
-    this.httpServer = http.createServer(
-      (req: http.IncomingMessage, res: http.ServerResponse): void => {
-        this.compiler.whenReady(() => {
-          // serve script
-          if (req.url === '/static/main.js') {
-            res.statusCode = 200;
-            const file = path.resolve(Project.dist, 'main.js');
-            // TODO: use safe readfile (Either) and 404 when Left
-            // e.g. file not found or permission denied
-            fs.createReadStream(file).pipe(res);
-            return;
-          }
-
-          // serve page
-          const html = `<!DOCTYPE html><html><head><title>Nimman</title></head><body><script src="/static/main.js"></script></body></html>`;
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
-          res.write(html);
-          res.end();
-
-          // const { handler } = matchRoute(req.url).fold(routeNotFound, identity);
-          // const response = handler({ headers: req.headers });
-          // res.writeHead(200, response.headers);
-          // res.write(response.body);
-          // res.end();
-        });
-      }
-    );
+  constructor(requestHandler: HttpRequestHandler) {
+    this.httpServer = http.createServer(requestHandler);
   }
 
-  start(): Promise<void> {
+  // `start` is called by "user" we cannot statically guarantee the type
+  start(port: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       this.httpServer.once('error', reject);
       this.httpServer.once('listening', () => resolve());
-      this.httpServer.listen(3000);
+      this.httpServer.listen(port);
     });
   }
 
@@ -73,7 +66,8 @@ class DevServer implements ServerInterface {
   }
 }
 
-export function createDevServer(/* port: number */) {
+export function createDevServer() {
   const compiler = new Compiler();
-  return new DevServer(compiler);
+  const requestHandler = makeRequestHandler(compiler);
+  return new DevServer(requestHandler);
 }
