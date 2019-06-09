@@ -15,9 +15,8 @@
 import * as Project from './__Config'; // TEMPORARY
 import * as fs from 'fs';
 import * as path from 'path';
-import { Readable as ReadableStream } from 'stream';
-import { Task, task, tryCatch as taskTryCatch } from 'fp-ts/lib/Task';
-import { Either } from 'fp-ts/lib/Either';
+import * as stream from 'stream';
+import { TaskEither, tryCatch } from 'fp-ts/lib/TaskEither';
 
 type RequestFileFailure = FileNotFound | UpstreamTimeout;
 
@@ -40,15 +39,17 @@ export class UpstreamTimeout {
 // `filename` is something like `message.js` (not a path)
 export const requestFile = (
   filename: string
-): Task<Either<RequestFileFailure, ReadableStream>> =>
-  task
-    .of(path.join(Project.dist, filename))
-    .chain(filepath =>
-      taskTryCatch(
-        async () => fs.createReadStream(filepath),
-        // TODO: do _not_ make all failures FileNotFound
-        () => new FileNotFound()
-      )
-    );
+): TaskEither<RequestFileFailure, stream.Readable> =>
+  tryCatch(
+    () =>
+      new Promise((resolve, reject) => {
+        const filepath = path.join(Project.dist, filename);
+        fs.access(filepath, fs.constants.R_OK, err => {
+          err ? reject(err) : resolve(fs.createReadStream(filepath));
+        });
+      }),
+    // TODO: do _not_ make all failures FileNotFound
+    () => new FileNotFound()
+  );
 
 // rename to OnDiskWebpackBundleAdapter implements StaticAssetAdapter ?
