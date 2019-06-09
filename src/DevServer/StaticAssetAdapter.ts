@@ -9,7 +9,7 @@
  * but this (the Adapter) should report boundary failure reasons as-is
  * i.e. this layer is _not_ where we drop/mask failure information
  *
- * Boundary. [TODO] create __mocks__
+ * Boundary.
  * I/O aware.
  */
 import * as Project from './__Config'; // TEMPORARY

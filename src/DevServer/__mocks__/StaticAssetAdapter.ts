@@ -1,15 +1,17 @@
-import { task } from 'fp-ts/lib/Task';
-import { fromNullable as eitherFromNullable } from 'fp-ts/lib/Either';
-import { Readable as ReadableStream } from 'stream';
+import * as stream from 'stream';
+import * as $Either from 'fp-ts/lib/Either';
+import { fromEither } from 'fp-ts/lib/TaskEither';
 import { createSingletonStream } from '../../scrapbook/StreamUtils';
+import {
+  FileNotFound,
+  requestFile as realRequestFile,
+} from '../StaticAssetAdapter';
 
-const fakeFileSystem: Record<string, ReadableStream> = {
+const fakeFileSystem: Partial<Record<string, stream.Readable>> = {
   'should-find.txt': createSingletonStream('fakeContent from should-find.txt'),
 };
 
-const notFoundIfNullable = eitherFromNullable(
-  createSingletonStream('file not found')
-);
+const notFoundIfNullable = $Either.fromNullable(new FileNotFound());
 
-export const requestFile = (filename: string) =>
-  task.of(fakeFileSystem[filename]).map(notFoundIfNullable);
+export const requestFile: typeof realRequestFile = (filename: string) =>
+  fromEither(notFoundIfNullable(fakeFileSystem[filename]));
