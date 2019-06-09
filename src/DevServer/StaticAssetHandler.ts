@@ -1,38 +1,39 @@
+/**
+ * staticFileHandler :: Filename -> Task Response
+ * staticFileAdapter :: Filename -> TaskEither Failure Content(Body)Stream
+ *
+ * data Response = GoodResponse | BadResponse
+ */
+
+import * as stream from 'stream';
 import { fromNullable } from 'fp-ts/lib/Option';
 import { task } from 'fp-ts/lib/Task';
-import { Readable as ReadableStream } from 'stream';
-import { Handler, Response } from './Router';
+import * as Router from './Router';
 import { requestFile } from './StaticAssetAdapter';
 import { createSingletonStream } from '../scrapbook/StreamUtils';
-import { identity } from 'fp-ts/lib/function';
 
-// staticFileAdapter -> Content(Body)Stream
-// staticFileHandler -> Response
-
-// data Response = GoodResponse | BadResponse
-// staticFileHandler :: Filename -> Task Response
-
-export class FileExisted implements Response {
+class FileExisted implements Router.Response {
   readonly statusCode = 200;
   readonly headers = { 'Content-Type': 'plain/text' };
-  constructor(readonly body: ReadableStream) {}
+  constructor(readonly body: stream.Readable) {}
 }
 
-const fileExisted = (body: ReadableStream) => new FileExisted(body);
-
-export class FileNotFound implements Response {
+class FileNotFound implements Router.Response {
   readonly statusCode = 404;
   readonly headers = { 'Content-Type': 'plain/text' };
   readonly body = createSingletonStream('file not found');
 }
 
-const fileNotFound = new FileNotFound();
+type Response = FileExisted | FileNotFound;
+
+const fileExisted = (body: stream.Readable) => new FileExisted(body);
+const fileNotFound = () => new FileNotFound();
 
 // Q: is it okay to know how it's get called by router i.e. `params.filename`?
-export const handler: Handler = params =>
-  fromNullable(params.filename).fold(task.of(fileNotFound), filename =>
-    requestFile(filename).map(result =>
-      result.fold<Response>(() => fileNotFound, fileExisted)
-    )
-  );
+export const handler: Router.Handler = params =>
+  fromNullable(params.filename)
+    // : Option<Task<Response>>
+    .map(f => requestFile(f).fold<Response>(fileNotFound, fileExisted))
+    // : Task<Response>
+    .getOrElseL(() => task.of(fileNotFound()));
 // otherwise(StaticFile.NotFound /*: Response */)
