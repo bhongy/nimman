@@ -9,7 +9,6 @@
 import * as http from 'http';
 import { Compiler } from './Compiler';
 import * as Router from './Router';
-import { ServerInterface } from '../Server';
 
 interface HttpRequestHandler {
   (req: http.IncomingMessage, res: http.ServerResponse): void;
@@ -35,7 +34,7 @@ const makeRequestHandler = (compiler: Compiler): HttpRequestHandler => (
   });
 };
 
-class DevServer implements ServerInterface {
+class DevServer implements Nimman.Server {
   private readonly httpServer: http.Server;
 
   constructor(requestHandler: HttpRequestHandler) {

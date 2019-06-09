@@ -5,7 +5,7 @@ import { createSingletonStream } from '../../scrapbook/StreamUtils';
 
 const { FileNotFound } = jest.requireActual('../StaticAssetAdapter');
 
-const fakeFileSystem: Partial<Record<string, stream.Readable>> = {
+const fakeFileSystem: StrictRecord<string, stream.Readable> = {
   'should-find.txt': createSingletonStream('fakeContent from should-find.txt'),
 };
 

@@ -1,6 +1,4 @@
-import { ServerInterface } from "../Server";
-
-class ProdServer implements ServerInterface {
+class ProdServer implements Nimman.Server {
   get buildId(): string {
     return 'not implmented';
   }
