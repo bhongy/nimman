@@ -1,6 +1,6 @@
 jest.mock('./StaticAssetAdapter');
 
-import { streamToString } from '../scrapbook/StreamUtils';
+import * as StreamUtils from '../lib/StreamUtils';
 import { handler } from './StaticAssetHandler';
 
 describe('StaticAssetHandler', () => {
@@ -10,7 +10,7 @@ describe('StaticAssetHandler', () => {
       const filename = 'should-find.txt';
       const res = await handler({ filename }).run();
       expect(res.statusCode).toBe(200);
-      expect(await streamToString(res.body)).toBe(
+      expect(await StreamUtils.toString(res.body)).toBe(
         'fakeContent from should-find.txt'
       );
     });
@@ -23,7 +23,7 @@ describe('StaticAssetHandler', () => {
       const res = await handler({ filename }).run();
       expect(res.statusCode).toBe(404);
       // temporary
-      expect(await streamToString(res.body)).toBe('file not found');
+      expect(await StreamUtils.toString(res.body)).toBe('file not found');
     });
   });
 });

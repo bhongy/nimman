@@ -10,7 +10,7 @@ import { fromNullable } from 'fp-ts/lib/Option';
 import { task } from 'fp-ts/lib/Task';
 import * as Router from './Router';
 import { requestFile } from './StaticAssetAdapter';
-import { createSingletonStream } from '../scrapbook/StreamUtils';
+import * as StreamUtils from '../lib/StreamUtils';
 
 class FileExisted implements Router.Response {
   readonly statusCode = 200;
@@ -21,7 +21,7 @@ class FileExisted implements Router.Response {
 class FileNotFound implements Router.Response {
   readonly statusCode = 404;
   readonly headers = { 'Content-Type': 'plain/text' };
-  readonly body = createSingletonStream('file not found');
+  readonly body = StreamUtils.fromString('file not found');
 }
 
 type StaticFileResponse = FileExisted | FileNotFound;

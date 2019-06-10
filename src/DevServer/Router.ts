@@ -29,7 +29,7 @@ import { Readable as ReadableStream } from 'stream';
 import { handler as staticAssetHandler } from './StaticAssetHandler';
 import { renderPage } from './PageRenderer';
 import { routeMatcher, Params } from '../lib/RouteMatcher';
-import { createSingletonStream } from '../scrapbook/StreamUtils';
+import * as StreamUtils from '../lib/StreamUtils';
 
 /**
  * Response interface enforces contract that the caller is guaranteed
@@ -101,7 +101,7 @@ namespace NimmanServer {
 class NotFoundResponse implements Response {
   readonly statusCode = 404;
   readonly headers = { 'Content-Type': 'text/plain' };
-  readonly body = createSingletonStream('file not found');
+  readonly body = StreamUtils.fromString('file not found');
 }
 
 // Request -> Handler -> Response
